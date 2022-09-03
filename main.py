@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 import sqlite3
 import pandas as pd
+from math import cos, asin, sqrt
+from json import JSONEncoder
 
 def initVelibTable(conn):
     """
@@ -35,5 +37,31 @@ def login():
     data = request.json
     return jsonify(data)   
 
+
+@app.route('/find/velib', methods=['GET'])
+def find_velib():
+    latitude = request.args.get('latitude')
+    longitude = request.args.get('longitude')
+    cursor = sqlite3.connect("db.sqlite") .cursor()
+    data = cursor.execute('''SELECT geo, "Nom de la station" FROM velib''')
+    list = [] 
+    for row in data:  
+        tmp = {'latitude': float(row[0].split(",")[0]), 'longitude': float(row[0].split(",")[1]),'name': row[1]}
+        list.append(tmp)   
+    
+    return closest(list, {'latitude': float(latitude or 0), 'longitude': float(longitude or 0)})
+ 
+
+
+
+def distance(lat1, lon1, lat2, lon2):
+    p = 0.017453292519943295
+    hav = 0.5 - cos((lat2-lat1)*p)/2 + cos(lat1*p)*cos(lat2*p) * (1-cos((lon2-lon1)*p)) / 2
+    return 12742 * asin(sqrt(hav))
+
+def closest(data, v):
+    return min(data, key=lambda p: distance(v['latitude'],v['longitude'],p['latitude'],p['longitude']))
+ 
+ 
 
 app.run(host='0.0.0.0', port=9090)
