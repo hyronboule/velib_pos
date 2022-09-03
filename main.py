@@ -49,7 +49,7 @@ def find_velib():
         tmp = {'latitude': float(row[0].split(",")[0]), 'longitude': float(row[0].split(",")[1]),'name': row[1]}
         list.append(tmp)   
     
-    return closest(list, {'latitude': float(latitude or 0), 'longitude': float(longitude or 0)})
+    return closest(list, {'latitude': float(latitude), 'longitude': float(longitude)})
  
 
 
